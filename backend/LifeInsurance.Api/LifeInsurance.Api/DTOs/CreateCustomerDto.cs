@@ -17,10 +17,7 @@ namespace LifeInsurance.Api.DTOs
         public string Email { get; set; } = string.Empty;
 
         [Required]
-        [RegularExpression(
-            @"^\+?[1-9]\d{7,14}$",
-            ErrorMessage = "Mobile number must be a valid phone number."
-        )]
+        [StringLength(20)]
         public string MobileNumber { get; set; } = string.Empty;
 
         [Required]

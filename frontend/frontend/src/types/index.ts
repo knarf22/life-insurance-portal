@@ -37,3 +37,19 @@ export interface PolicyApplication {
   applicationDate: string;
   status: string;
 }
+
+export interface CreateQuoteRequest {
+  customerId: string;
+  product: "TERM_LIFE" | "WHOLE_LIFE";
+  coverageAmount: number;
+  policyTermYears: number;
+  paymentFrequency: "MONTHLY" | "ANNUAL";
+}
+
+export interface CreateCustomerForm {
+  fullName: string;
+  dateOfBirth: string;
+  email: string;
+  mobileNumber: string;
+  isSmoker: boolean;
+}

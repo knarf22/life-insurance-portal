@@ -360,5 +360,91 @@ namespace LifeInsurance.Api.Controllers
 
             return Ok(response);
         }
+
+        [HttpPost("calculate-premium")]
+        public async Task<IActionResult> CalculatePremium(CreateQuoteDto dto)
+        {
+            // Find customer
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(x => x.Id == dto.CustomerId);
+
+            if (customer == null)
+            {
+                return NotFound(new
+                {
+                    message = "Customer not found."
+                });
+            }
+
+            // Validate product
+            var validProducts = new[]
+            {
+                "TERM_LIFE",
+                "WHOLE_LIFE"
+            };
+
+            if (!validProducts.Contains(dto.Product))
+            {
+                return BadRequest(new
+                {
+                    message = "Invalid product type."
+                });
+            }
+
+            // Validate policy term
+            var validTerms = new[] { 5, 10, 15, 20 };
+
+            if (!validTerms.Contains(dto.PolicyTermYears))
+            {
+                return BadRequest(new
+                {
+                    message =
+                        "Policy term must be 5, 10, 15, or 20 years."
+                });
+            }
+
+            // Validate payment frequency
+            var validFrequencies = new[]
+            {
+                "MONTHLY",
+                "ANNUAL"
+            };
+
+            if (!validFrequencies.Contains(dto.PaymentFrequency))
+            {
+                return BadRequest(new
+                {
+                    message =
+                        "Payment frequency must be MONTHLY or ANNUAL."
+                });
+            }
+
+            // Validate coverage
+            if (dto.CoverageAmount < 100000 ||
+                dto.CoverageAmount > 5000000)
+            {
+                return BadRequest(new
+                {
+                    message =
+                        "Coverage must be between 100,000 and 5,000,000."
+                });
+            }
+
+            // Calculate premium
+            var premium = _premiumService.Calculate(
+                customer,
+                dto.Product,
+                dto.CoverageAmount,
+                dto.PolicyTermYears,
+                dto.PaymentFrequency);
+
+            return Ok(new
+            {
+                baseAnnualPremium = premium.BaseAnnualPremium,
+                riskLoadingPercent = premium.RiskLoadingPercent,
+                annualPremium = premium.AnnualPremium,
+                paymentAmount = premium.PaymentAmount
+            });
+        }
     }
 }
