@@ -53,3 +53,66 @@ export interface CreateCustomerForm {
   mobileNumber: string;
   isSmoker: boolean;
 }
+
+export interface CustomerTableProps {
+  customers: Customer[];
+  loading: boolean;
+  error: string;
+  search: string;
+}
+
+export interface AddCustomerModalProps {
+  onClose: () => void;
+  onSuccess: () => Promise<void>;
+}
+
+export interface QuoteTableProps {
+  quotes: Quote[];
+  loading: boolean;
+  error: string;
+  search: string;
+  updatingQuoteId: string | null;
+
+  onUpdateStatus: (
+    id: string,
+    status: "ACCEPTED" | "DECLINED"
+  ) => void;
+
+  onConvertQuote: (id: string) => void;
+
+  formatCurrency: (amount: number) => string;
+}
+
+export interface CreateQuoteModalProps {
+    showModal: boolean;
+    customers: Customer[];
+
+    onClose: () => void;
+    onQuoteCreated: () => Promise<void>;
+}
+
+export interface CreateQuoteRequest {
+    customerId: string;
+
+    product:
+    | "TERM_LIFE"
+    | "WHOLE_LIFE";
+
+    coverageAmount: number;
+
+    policyTermYears: number;
+
+    paymentFrequency:
+    | "MONTHLY"
+    | "ANNUAL";
+}
+
+export interface PremiumResult {
+    baseAnnualPremium: number;
+
+    riskLoadingPercent: number;
+
+    annualPremium: number;
+
+    paymentAmount: number;
+}

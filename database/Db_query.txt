@@ -1,0 +1,140 @@
+CREATE DATABASE LifeInsuranceDb;
+GO
+
+USE LifeInsuranceDb;
+GO
+
+-- =============================================
+-- Customers
+-- =============================================
+CREATE TABLE Customers
+(
+    Id UNIQUEIDENTIFIER NOT NULL
+        CONSTRAINT PK_Customers PRIMARY KEY
+        DEFAULT NEWID(),
+
+    FullName NVARCHAR(150) NOT NULL,
+
+    DateOfBirth DATE NOT NULL,
+
+    Email NVARCHAR(150) NOT NULL
+        CONSTRAINT UQ_Customers_Email UNIQUE,
+
+    MobileNumber NVARCHAR(20) NOT NULL,
+
+    IsSmoker BIT NOT NULL,
+
+    CreatedAt DATETIME2 NOT NULL
+        CONSTRAINT DF_Customers_CreatedAt DEFAULT SYSUTCDATETIME()
+);
+GO
+
+
+-- =============================================
+-- Quotes
+-- =============================================
+CREATE TABLE Quotes
+(
+    Id UNIQUEIDENTIFIER NOT NULL
+        CONSTRAINT PK_Quotes PRIMARY KEY
+        DEFAULT NEWID(),
+
+    QuoteNumber NVARCHAR(30) NOT NULL
+        CONSTRAINT UQ_Quotes_QuoteNumber UNIQUE,
+
+    CustomerId UNIQUEIDENTIFIER NOT NULL,
+
+    Product NVARCHAR(20) NOT NULL,
+
+    CoverageAmount DECIMAL(18, 2) NOT NULL,
+
+    PolicyTermYears INT NOT NULL,
+
+    PaymentFrequency NVARCHAR(20) NOT NULL,
+
+    AnnualPremium DECIMAL(18, 2) NOT NULL,
+
+    PaymentAmount DECIMAL(18, 2) NOT NULL,
+
+    Status NVARCHAR(20) NOT NULL
+        CONSTRAINT DF_Quotes_Status DEFAULT 'DRAFT',
+
+    CreatedAt DATETIME2 NOT NULL
+        CONSTRAINT DF_Quotes_CreatedAt DEFAULT SYSUTCDATETIME(),
+
+    UpdatedAt DATETIME2 NOT NULL
+        CONSTRAINT DF_Quotes_UpdatedAt DEFAULT SYSUTCDATETIME(),
+
+    CONSTRAINT FK_Quotes_Customers
+        FOREIGN KEY (CustomerId)
+        REFERENCES Customers(Id),
+
+    CONSTRAINT CK_Quotes_Coverage
+        CHECK (CoverageAmount BETWEEN 100000 AND 5000000),
+
+    CONSTRAINT CK_Quotes_Product
+        CHECK (Product IN ('TERM_LIFE', 'WHOLE_LIFE')),
+
+    CONSTRAINT CK_Quotes_Term
+        CHECK (PolicyTermYears IN (5, 10, 15, 20)),
+
+    CONSTRAINT CK_Quotes_PaymentFrequency
+        CHECK (PaymentFrequency IN ('MONTHLY', 'ANNUAL')),
+
+    CONSTRAINT CK_Quotes_Status
+        CHECK (Status IN ('DRAFT', 'ACCEPTED', 'DECLINED', 'CONVERTED'))
+);
+GO
+
+
+-- =============================================
+-- Policy Applications
+-- =============================================
+CREATE TABLE PolicyApplications
+(
+    Id UNIQUEIDENTIFIER NOT NULL
+        CONSTRAINT PK_PolicyApplications PRIMARY KEY
+        DEFAULT NEWID(),
+
+    ApplicationNumber NVARCHAR(30) NOT NULL
+        CONSTRAINT UQ_PolicyApplications_ApplicationNumber UNIQUE,
+
+    QuoteId UNIQUEIDENTIFIER NOT NULL,
+
+    CustomerId UNIQUEIDENTIFIER NOT NULL,
+
+    Product NVARCHAR(20) NOT NULL,
+
+    CoverageAmount DECIMAL(18, 2) NOT NULL,
+
+    PolicyTermYears INT NOT NULL,
+
+    PaymentFrequency NVARCHAR(20) NOT NULL,
+
+    AnnualPremium DECIMAL(18, 2) NOT NULL,
+
+    PaymentAmount DECIMAL(18, 2) NOT NULL,
+
+    ApplicationDate DATETIME2 NOT NULL
+        CONSTRAINT DF_PolicyApplications_ApplicationDate
+        DEFAULT SYSUTCDATETIME(),
+
+    Status NVARCHAR(30) NOT NULL
+        CONSTRAINT DF_PolicyApplications_Status
+        DEFAULT 'PENDING_UNDERWRITING',
+
+    CONSTRAINT FK_PolicyApplications_Quotes
+        FOREIGN KEY (QuoteId)
+        REFERENCES Quotes(Id),
+
+    CONSTRAINT FK_PolicyApplications_Customers
+        FOREIGN KEY (CustomerId)
+        REFERENCES Customers(Id),
+
+    CONSTRAINT UQ_PolicyApplications_QuoteId
+        UNIQUE (QuoteId),
+
+    CONSTRAINT CK_PolicyApplications_Status
+        CHECK (Status IN ('PENDING_UNDERWRITING'))
+);
+GO
